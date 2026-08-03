@@ -1,18 +1,18 @@
 ---
-doc_id: "returns-policy"
-title: "Chính sách bảo mật"
-source_url: "https://help.shopee.vn/portal/article/77244"
+doc_id: "privacy-and-data"
+title: "Chính sách bảo mật thông tin cá nhân Shopee"
+source_url: "https://help.shopee.vn/4/article/77244-CHÍNH-SÁCH-BẢO-MẬT"
 retrieved_at: "2026-08-02"
 document_version: "2026.08"
-file_path: "data\\k4_ecommerce\\returns-policy.md"
-customer_role: "buyer"
-category: "returns"
-department: "support"
+file_path: "data\\k4_ecommerce\\privacy-and-data.md"
+customer_role: "both"
+category: "privacy"
+department: "trust-and-safety"
 language: "vi"
 effective_date: "2026-08-02"
 ---
 
-# Chính sách bảo mật
+# Chính sách bảo mật thông tin cá nhân Shopee
 
 CHÍNH SÁCH BẢO MẬT | Shopee Trung tâm trợ giúp
 

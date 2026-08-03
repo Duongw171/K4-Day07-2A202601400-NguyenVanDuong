@@ -1,7 +1,7 @@
 """
 ingest.py — pipeline nạp dữ liệu ĐÃ CUNG CẤP cho Lab 7 (Giai đoạn 2/3).
 
-Biến một thư mục file `.md`/`.txt` thành một `EmbeddingStore` tìm kiếm được:
+one call upon sevenmục file `.md`/`.txt` thành một `EmbeddingStore` tìm kiếm được:
 
     1. Parse YAML front matter  -> metadata cho từng tài liệu (xem docs/DATA_COLLECTION.md)
     2. Chia mỗi tài liệu thành chunks bằng chiến lược bạn chọn

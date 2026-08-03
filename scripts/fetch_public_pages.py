@@ -16,7 +16,7 @@ from datetime import date
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse, urlunparse
 from urllib.request import Request, urlopen
 from urllib.robotparser import RobotFileParser
 
@@ -88,20 +88,39 @@ def yaml_value(value: str) -> str:
 def load_rows(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8", newline="") as source_file:
         reader = csv.DictReader(source_file)
-        if not reader.fieldnames or "url" not in reader.fieldnames:
-            raise ValueError("Input CSV must have a 'url' column.")
+        if not reader.fieldnames:
+            raise ValueError("Input CSV is empty or missing a header row.")
+
+        url_field = next((name for name in ("url", "source_url") if name in reader.fieldnames), None)
+        if not url_field:
+            raise ValueError("Input CSV must have a 'url' or 'source_url' column.")
+
         rows = []
         for number, row in enumerate(reader, start=2):
             cleaned = {key.strip(): (value or "").strip() for key, value in row.items() if key}
-            if not cleaned.get("url"):
+            url_value = cleaned.get(url_field)
+            if not url_value:
                 print(f"Skipping row {number}: missing url", file=sys.stderr)
             else:
+                if url_field != "url":
+                    cleaned["url"] = url_value
                 rows.append(cleaned)
     return rows
 
 
-def robots_allowed(url: str, user_agent: str) -> bool:
+def normalize_url(url: str) -> str:
     parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return url
+    path = quote(parsed.path, safe="/%")
+    query = quote(parsed.query, safe="=&?/%")
+    fragment = quote(parsed.fragment, safe="")
+    return urlunparse((parsed.scheme, parsed.netloc, path, parsed.params, query, fragment))
+
+
+def robots_allowed(url: str, user_agent: str) -> bool:
+    normalized_url = normalize_url(url)
+    parsed = urlparse(normalized_url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         print(f"Skipping unsupported URL: {url}", file=sys.stderr)
         return False
@@ -112,14 +131,15 @@ def robots_allowed(url: str, user_agent: str) -> bool:
     except (HTTPError, URLError, OSError) as error:
         print(f"Skipping {url}: cannot verify {robots_url} ({error})", file=sys.stderr)
         return False
-    if not parser.can_fetch(user_agent, url):
+    if not parser.can_fetch(user_agent, normalized_url):
         print(f"Skipping {url}: disallowed by robots.txt", file=sys.stderr)
         return False
     return True
 
 
 def fetch(url: str, user_agent: str, timeout: float) -> tuple[str, str]:
-    request = Request(url, headers={"User-Agent": user_agent, "Accept": "text/html,text/plain;q=0.9,*/*;q=0.1"})
+    normalized_url = normalize_url(url)
+    request = Request(normalized_url, headers={"User-Agent": user_agent, "Accept": "text/html,text/plain;q=0.9,*/*;q=0.1"})
     with urlopen(request, timeout=timeout) as response:  # noqa: S310 - URL is supplied by the course user.
         content_type = response.headers.get_content_type().lower()
         if content_type not in {"text/html", "text/plain"}:
@@ -176,7 +196,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--delay", type=float, default=1.0, help="Minimum seconds between requests (default: 1.0)")
     parser.add_argument("--timeout", type=float, default=20.0, help="Per-request timeout in seconds (default: 20)")
     parser.add_argument("--user-agent", default=DEFAULT_USER_AGENT, help="HTTP User-Agent")
-    parser.add_argument("--overwrite", action="store_true", help="Replace an existing Markdown file with the same doc_id")
+    parser.add_argument("--overwrite", dest="overwrite", action="store_true", default=True, help="Replace an existing Markdown file with the same doc_id")
+    parser.add_argument("--no-overwrite", dest="overwrite", action="store_false", help="Keep existing Markdown files and skip re-fetching them")
     return parser.parse_args()
 
 
@@ -213,7 +234,9 @@ def main() -> int:
             metadata = build_metadata(row, final_url, title)
             output_path = args.output_dir / f"{metadata['doc_id']}.md"
             if output_path.exists() and not args.overwrite:
-                raise FileExistsError(f"{output_path} exists (use --overwrite to replace it)")
+                print(f"Skipping {url}: {output_path} already exists", file=sys.stderr)
+                failed += 1
+                continue
             output_path.write_text(markdown_document(metadata, content), encoding="utf-8")
             manifest[metadata["doc_id"]] = {
                 "doc_id": metadata["doc_id"], "file_path": str(output_path), "title": metadata["title"],

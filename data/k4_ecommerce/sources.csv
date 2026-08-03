@@ -1,3 +1,6 @@
 doc_id,file_path,title,source_url,retrieved_at,document_version,license_or_permission
-k4-returns-policy,data/k4_ecommerce/returns-policy.md,Chính sách đổi trả,https://example.com/chinh-sach/doi-tra,2026-08-02,2026.1,example-template-replace-me
-k4-seller-listing,data/k4_ecommerce/seller-listing.md,Quy định đăng bán,https://example.com/nguoi-ban/dang-ban,2026-08-02,2026.1,example-template-replace-me
+payment-terms,data\k4_ecommerce\payment-terms.md,Điều khoản dịch vụ Shopee,https://help.shopee.vn/portal/4/article/77243,2026-08-02,2026.08,public-page
+privacy-and-data,data\k4_ecommerce\privacy-and-data.md,Chính sách bảo mật thông tin cá nhân Shopee,https://help.shopee.vn/portal/4/article/77244,2026-08-02,2026.08,public-page
+returns-policy,data\k4_ecommerce\returns-policy.md,Chính sách đổi trả và hoàn tiền Shopee,https://help.shopee.vn/portal/4/article/77245,2026-08-02,2026.08,public-page
+seller-appeal,data\k4_ecommerce\seller-appeal.md,Quy trình khiếu nại dành cho người bán Shopee,https://help.shopee.vn/portal/4/article/79191,2026-08-02,2026.08,public-page
+seller-listing,data\k4_ecommerce\seller-listing.md,Quy định về đăng bán sản phẩm trên Shopee,https://help.shopee.vn/portal/4/article/77246,2026-08-02,2026.08,public-page
